@@ -16,7 +16,6 @@ def main(argv):
                     print('{} {} diff'.format(i+1, j+1))
         
         print('{} sheet complete.'.format(sheet_idx+1))
-                
 
 if __name__ == '__main__':
     main(sys.argv)
