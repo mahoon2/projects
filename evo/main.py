@@ -26,14 +26,13 @@ BACKGROUND = pg.transform.scale(
 RABBITS = []
 WOLVES = []
 GENOTYPE_STAT = {}
-GENOTYPE_STAT_OVER_TIME = {}
 
 class Rabbit:
     REPRODUCE_THRESOLD = 7
     DEATH_THRESOLD = 10
-    GENE_NAMES = ['Teeth', 'Speed', 'Color', 'Size', 'Time',
-                  'Acromegaly', 'Metabolism', 'OxygenEffiency']
-    GENOTYPE = ['AA', 'Aa', 'aa']
+    GENE_NAMES = ('Teeth', 'Speed', 'Color', 'Size', 'Time',
+                  'Acromegaly', 'Metabolism', 'OxygenEffiency')
+    GENOTYPE = ('AA', 'Aa', 'aa')
 
     def __init__(self, gene_list: dict):
         # surface object
@@ -137,32 +136,34 @@ def rabbit_time_passed():
 x = []
 y1 = []
 y2 = []
+time = 0
+
 def print_genostat(gene_name):
     s = 2*sum(GENOTYPE_STAT[gene_name].values())
     ret = (round((2*GENOTYPE_STAT[gene_name]['AA'] + GENOTYPE_STAT[gene_name]['Aa'])/s, 2),
            round((GENOTYPE_STAT[gene_name]['Aa'] + 2*GENOTYPE_STAT[gene_name]['aa'])/s, 2))
-    GENOTYPE_STAT_OVER_TIME[gene_name].append(ret)
 
-    x.append(len(GENOTYPE_STAT_OVER_TIME[gene_name]))
-    y1.append(GENOTYPE_STAT_OVER_TIME[gene_name][-1][0])
-    y2.append(GENOTYPE_STAT_OVER_TIME[gene_name][-1][1])
+    global time
+    x.append(time)
+    y1.append(ret[0])
+    y2.append(ret[1])
+    time += 1
 
     plt.cla()
     plt.plot(x, y1, label='A')
     plt.plot(x, y2, label='a')
     plt.legend(loc='upper left')
     plt.tight_layout()
-    plt.pause(0.2)
+    plt.pause(0.1)
 
 def initialize_rabbit(num):
     # AA 1/4, Aa 1/2, aa 1/4 의 비율로 토끼를 만든다
-    # GENOTYPE_STAT과 GENOTYPE_STAT_OVER_TIME을 초기화한다
+    # GENOTYPE_STAT을 초기화한다
 
     gene_cnt = dict()
     for name in Rabbit.GENE_NAMES:
         gene_cnt[name] = {'AA':num//4, 'Aa':num//2, 'aa':num//4}
         GENOTYPE_STAT[name] = {'AA':0, 'Aa':0, 'aa':0}
-        GENOTYPE_STAT_OVER_TIME[name] = []
 
     for _ in range(num):
         new_gene_dict = dict.fromkeys(Rabbit.GENE_NAMES)
@@ -178,7 +179,7 @@ def initialize_rabbit(num):
 
 def main():
     running = True
-    fps = 5
+    fps = 10
     #fps_limit = 600
     clock = pg.time.Clock()
 
