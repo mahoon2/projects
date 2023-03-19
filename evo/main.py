@@ -31,20 +31,26 @@ GENOTYPE_STAT_OVER_TIME = {}
 class Rabbit:
     REPRODUCE_THRESOLD = 7
     DEATH_THRESOLD = 10
+    GENE_NAMES = ['Teeth', 'Speed', 'Color', 'Size', 'Time',
+                  'Acromegaly', 'Metabolism', 'OxygenEffiency']
+    GENOTYPE = ['AA', 'Aa', 'aa']
 
     def __init__(self, gene_list: dict):
         # surface object
         self.age = 0
-        self.gene = Gene(gene_list)
+        self.gene = gene_list
         self.sf = pg.transform.scale(
-    pg.image.load(self.gene.get_image_path()), IMAGE_SIZE)
+    pg.image.load(self.get_image_path()), IMAGE_SIZE)
     
     def get_blit(self):
         return (self.sf, (random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
     
     def get_genes(self):
-        return self.gene.get_genes()
+        return self.gene
     
+    def get_image_path(self):
+        return os.path.join('evo', 'Assets', 'new_rabbit.png')
+
     def time_passed(self):
         # 0 for nothing
         # -1 for death
@@ -60,24 +66,10 @@ class Rabbit:
             return True
         return False
 
-class Gene:
-    GENE_NAMES = ['Teeth', 'Speed', 'Color', 'Size', 'Time',
-                  'Acromegaly', 'Metabolism', 'OxygenEffiency']
-    GENOTYPE = ['AA', 'Aa', 'aa']
-
-    def __init__(self, gene_list: dict):
-        self.gene_dict = gene_list
-    
-    def get_genes(self):
-        return self.gene_dict
-    
-    def get_image_path(self):
-        return os.path.join('evo', 'Assets', 'new_rabbit.png')
-
 def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
     ret = dict()
 
-    for name in Gene.GENE_NAMES:
+    for name in Rabbit.GENE_NAMES:
         temp1 = father_gene[name]
         temp2 = mother_gene[name]
         ret[name] = temp1[random.randint(0, 1)] + temp2[random.randint(0, 1)]
@@ -163,19 +155,21 @@ def print_genostat(gene_name):
     plt.pause(0.2)
 
 def initialize_rabbit(num):
-    # AA 1/4, Aa 1/2, aa 1/4
+    # AA 1/4, Aa 1/2, aa 1/4 의 비율로 토끼를 만든다
+    # GENOTYPE_STAT과 GENOTYPE_STAT_OVER_TIME을 초기화한다
+
     gene_cnt = dict()
-    for name in Gene.GENE_NAMES:
+    for name in Rabbit.GENE_NAMES:
         gene_cnt[name] = {'AA':num//4, 'Aa':num//2, 'aa':num//4}
         GENOTYPE_STAT[name] = {'AA':0, 'Aa':0, 'aa':0}
         GENOTYPE_STAT_OVER_TIME[name] = []
 
     for _ in range(num):
-        new_gene_dict = dict.fromkeys(Gene.GENE_NAMES)
+        new_gene_dict = dict.fromkeys(Rabbit.GENE_NAMES)
 
-        for name in Gene.GENE_NAMES:
-            picked_genotype = Gene.GENOTYPE[pick_by_probability([gene_cnt[name][key]
-                                                                for key in Gene.GENOTYPE])]
+        for name in Rabbit.GENE_NAMES:
+            picked_genotype = Rabbit.GENOTYPE[pick_by_probability([gene_cnt[name][key]
+                                                                for key in Rabbit.GENOTYPE])]
             new_gene_dict[name] = picked_genotype
             gene_cnt[name][picked_genotype] -= 1
             GENOTYPE_STAT[name][picked_genotype] += 1
