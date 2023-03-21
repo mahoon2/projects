@@ -14,13 +14,13 @@ BLACK = (0, 0, 0)
 
 IMAGE_SIZE = (100, 100)
 '''RABBIT = pg.transform.scale(
-    pg.image.load(os.path.join('evo', 'Assets', 'rabbit (1).png')), IMAGE_SIZE
+    pg.image.load(os.path.join('Assets', 'rabbit (1).png')), IMAGE_SIZE
 )
 WOLF = pg.transform.scale(
-    pg.image.load(os.path.join('evo', 'Assets', 'wolf.png')), IMAGE_SIZE
+    pg.image.load(os.path.join('Assets', 'wolf.png')), IMAGE_SIZE
 )'''
 BACKGROUND = pg.transform.scale(
-    pg.image.load(os.path.join('evo', 'Assets', 'grass_bg.jpg')), (WIDTH, HEIGHT)
+    pg.image.load(os.path.join('Assets', 'grass_bg.jpg')), (WIDTH, HEIGHT)
 )
 
 RABBITS = []
@@ -48,7 +48,7 @@ class Rabbit:
         return self.gene
     
     def get_image_path(self):
-        return os.path.join('evo', 'Assets', 'new_rabbit.png')
+        return os.path.join('Assets', 'new_rabbit.png')
 
     def time_passed(self):
         # 0 for nothing
