@@ -2,42 +2,18 @@ import pygame as pg
 import matplotlib.pyplot as plt
 import os
 import random
-
-WIDTH, HEIGHT = 1024, 768
-WIDTH_RANGE = (0, WIDTH*9//10)
-HEIGHT_RANGE = (HEIGHT*2//5, HEIGHT*9//10)
-WINDOW = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("Evolution simulator v0.1")
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-IMAGE_SIZE = (100, 100)
-'''RABBIT = pg.transform.scale(
-    pg.image.load(os.path.join('evo', 'Assets', 'rabbit (1).png')), IMAGE_SIZE
-)
-WOLF = pg.transform.scale(
-    pg.image.load(os.path.join('evo', 'Assets', 'wolf.png')), IMAGE_SIZE
-)'''
-BACKGROUND = pg.transform.scale(
-    pg.image.load(os.path.join('evo', 'Assets', 'grass_bg.jpg')), (WIDTH, HEIGHT)
-)
-
-RABBITS = []
-WOLVES = []
-GENOTYPE_STAT = {}
+from constant import *
 
 class Rabbit:
-    REPRODUCE_THRESOLD = 7
+    REPRODUCE_THRESOLD = 3
+    # Argument for pick_probability
+    REPRODUCE_RATE = [1, 2]
     DEATH_THRESOLD = 10
-    GENE_NAMES = ('Teeth', 'Speed', 'Color', 'Size', 'Time',
-                  'Acromegaly', 'Metabolism', 'OxygenEffiency')
-    GENOTYPE = ('AA', 'Aa', 'aa')
 
-    def __init__(self, gene_list: dict):
+    def __init__(self, gene_dict: dict):
         # surface object
         self.age = 0
-        self.gene = gene_list
+        self.gene = gene_dict
         self.sf = pg.transform.scale(
     pg.image.load(self.get_image_path()), IMAGE_SIZE)
     
@@ -48,7 +24,8 @@ class Rabbit:
         return self.gene
     
     def get_image_path(self):
-        return os.path.join('evo', 'Assets', 'new_rabbit.png')
+        # 특정 Gene의 표현형에 따라 파일을 다르게 할 수도 있음
+        return os.path.join('Assets', 'pixel_rabbit.png')
 
     def time_passed(self):
         # 0 for nothing
@@ -57,18 +34,33 @@ class Rabbit:
 
         self.age += 1
         if self.is_dead(): return -1
-        elif self.age >= Rabbit.REPRODUCE_THRESOLD: return 1
+        elif self.is_reproducing(): return 1
         else: return 0
     
     def is_dead(self):
         if self.age >= Rabbit.DEATH_THRESOLD:
             return True
+        for env, val in iter(CURRENT_ENV.items()):
+            if val == -1: continue
+            else:
+                env_join = env + ' ' + ENV[env][val]
+                gene_name, genotype, death_rate = ENV_DEATH_RATE[env_join]
+                if genotype in self.gene[gene_name]:
+                    prob_list = [death_rate*100, 100-(death_rate*100)]
+                    return [True, False][pick_by_probability(prob_list)]
+
         return False
+
+    def is_reproducing(self):
+        if self.age < Rabbit.REPRODUCE_THRESOLD:
+            return False
+        else:
+            return [True, False][pick_by_probability(Rabbit.REPRODUCE_RATE)]
 
 def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
     ret = dict()
 
-    for name in Rabbit.GENE_NAMES:
+    for name in GENE_NAMES:
         temp1 = father_gene[name]
         temp2 = mother_gene[name]
         ret[name] = temp1[random.randint(0, 1)] + temp2[random.randint(0, 1)]
@@ -133,9 +125,9 @@ def rabbit_time_passed():
         del reproducing_rabbits[i]
         del reproducing_rabbits[j-1]
 
-x = []
-y1 = []
-y2 = []
+x = dict.fromkeys(GENE_NAMES, list())
+y1 = dict.fromkeys(GENE_NAMES, list())
+y2 = dict.fromkeys(GENE_NAMES, list())
 time = 0
 
 def print_genostat(gene_name):
@@ -144,14 +136,17 @@ def print_genostat(gene_name):
            round((GENOTYPE_STAT[gene_name]['Aa'] + 2*GENOTYPE_STAT[gene_name]['aa'])/s, 2))
 
     global time
-    x.append(time)
-    y1.append(ret[0])
-    y2.append(ret[1])
+    x[gene_name].append(time)
+    y1[gene_name].append(ret[0])
+    y2[gene_name].append(ret[1])
     time += 1
 
     plt.cla()
-    plt.plot(x, y1, label='A')
-    plt.plot(x, y2, label='a')
+    plt.plot(x[gene_name], y1[gene_name], label='A')
+    plt.plot(x[gene_name], y2[gene_name], label='a')
+    plt.suptitle('Allele frequency')
+    plt.xlabel('time')
+    plt.ylabel('frequency')
     plt.legend(loc='upper left')
     plt.tight_layout()
     plt.pause(0.1)
@@ -161,16 +156,16 @@ def initialize_rabbit(num):
     # GENOTYPE_STAT을 초기화한다
 
     gene_cnt = dict()
-    for name in Rabbit.GENE_NAMES:
+    for name in GENE_NAMES:
         gene_cnt[name] = {'AA':num//4, 'Aa':num//2, 'aa':num//4}
         GENOTYPE_STAT[name] = {'AA':0, 'Aa':0, 'aa':0}
 
     for _ in range(num):
-        new_gene_dict = dict.fromkeys(Rabbit.GENE_NAMES)
+        new_gene_dict = dict.fromkeys(GENE_NAMES)
 
-        for name in Rabbit.GENE_NAMES:
-            picked_genotype = Rabbit.GENOTYPE[pick_by_probability([gene_cnt[name][key]
-                                                                for key in Rabbit.GENOTYPE])]
+        for name in GENE_NAMES:
+            picked_genotype = GENOTYPE[pick_by_probability([gene_cnt[name][key]
+                                                                for key in GENOTYPE])]
             new_gene_dict[name] = picked_genotype
             gene_cnt[name][picked_genotype] -= 1
             GENOTYPE_STAT[name][picked_genotype] += 1
@@ -179,10 +174,12 @@ def initialize_rabbit(num):
 
 def main():
     running = True
+    paused = True
     fps = 10
     #fps_limit = 600
     clock = pg.time.Clock()
 
+    draw_window()
     initial_rabbit = 500
     max_rabbits = 10000
     initialize_rabbit(initial_rabbit)
@@ -192,17 +189,25 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.KEYDOWN:
+                if pg.key.get_pressed()[pg.K_p]:
+                    paused = False
         
         if len(RABBITS) >= max_rabbits or len(RABBITS) <= 1:
             running = False
         
-        print('Current num of rabbits: ', len(RABBITS))
-        rabbit_time_passed()
-        draw_window()
-        print_genostat('Teeth')
+        if not paused:
+            print('Current num of rabbits: ', len(RABBITS))
+            rabbit_time_passed()
+            draw_window()
+
+            CURRENT_ENV["Food type"] = 0
+            print_genostat("Teeth")
+            '''for gene_name in GENE_NAMES:
+                print_genostat(gene_name)'''
     
-    pg.quit()
     plt.show()
+    pg.quit()
 
 if __name__ == '__main__':
     main()
