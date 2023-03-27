@@ -1,73 +1,11 @@
 import pygame as pg
 import matplotlib.pyplot as plt
-import os
 import random
+import sys
 from constant import *
+from animals import *
 
-class Rabbit:
-    REPRODUCE_THRESOLD = 3
-    # Argument for pick_probability
-    REPRODUCE_RATE = [1, 2]
-    DEATH_THRESOLD = 10
-
-    def __init__(self, gene_dict: dict, x: int, y: int):
-        # surface object
-        self.age = 0
-        self.gene = gene_dict
-        self.x = x
-        self.y = y
-        self.sf = pg.transform.scale(
-    pg.image.load(self.get_image_path()), IMAGE_SIZE)
-    
-    def get_blit(self):
-        return (self.sf, (self.x, self.y))
-    
-    def get_genes(self):
-        return self.gene
-    
-    def get_image_path(self):
-        # 특정 Gene의 표현형에 따라 파일을 다르게 할 수도 있음
-        return os.path.join('Assets', 'pixel_rabbit.png')
-
-    def time_passed(self):
-        # 0 for nothing
-        # -1 for death
-        # 1 for reproducing
-
-        self.age += 1
-        if self.is_dead(): return -1
-        elif self.is_reproducing(): return 1
-        else: return 0
-    
-    def is_dead(self):
-        if self.age >= Rabbit.DEATH_THRESOLD:
-            return True
-        for env, val in iter(CURRENT_ENV.items()):
-            pass
-
-            '''if val == -1: continue
-            else:
-                env_join = env + ' ' + ENV[env][val]
-                gene_name, genotype, death_rate = ENV_DEATH_RATE[env_join]
-                if genotype in self.gene[gene_name]:
-                    prob_list = [death_rate*100, 100-(death_rate*100)]
-                    return [True, False][pick_by_probability(prob_list)]'''
-
-        return False
-
-    def is_reproducing(self):
-        if self.age < Rabbit.REPRODUCE_THRESOLD:
-            return False
-        else:
-            return [True, False][pick_by_probability(Rabbit.REPRODUCE_RATE)]
-    
-    def parse_gene(self):
-        # 현재 켜져 있지 않은 환경(-1)은 무시한다.
-        # ex) 유전자형 상으로 사이즈나 속도가 달라도 해당 환경이 안 켜져 있으면 고려하지 않는다. 
-        for env, val in iter(CURRENT_ENV.items()):
-            if val == -1: continue
-
-# END of class Rabbit
+print = sys.stdout.write
 
 def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
     ret = dict()
@@ -75,59 +13,65 @@ def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
     for name in GENE_NAMES:
         temp1 = father_gene[name]
         temp2 = mother_gene[name]
-        ret[name] = temp1[random.randint(0, 1)] + temp2[random.randint(0, 1)]
+        ret[name] = random.choice(temp1) + random.choice(temp2)
         if ret[name] == 'aA':
             ret[name] = 'Aa'
     
     return ret
 
-def pick_by_probability(prob: list) -> int:
-    # Input : list of positive integers
-    # Output : Integer in range(0, len(list))
-
-    ret = random.randint(1, sum(prob))
-    s = 0
-    for i in range(len(prob)):
-        s += prob[i]
-        if s >= ret:
-            return i
-
 def draw_window():
+    # Only approximately 'draw_percentage'% animals will be drawn 
+    draw_percentage = 10
     WINDOW.blit(BACKGROUND, (0, 0))
     
-    # 화면에 보이는 토끼 * 100 = 실제 토끼
-    for i in range(0, len(RABBITS), 100):
-        rabbit = RABBITS[i]
-        WINDOW.blit(*rabbit.get_blit())
+    for i in range(0, len(RABBITS), 100//draw_percentage):
+        WINDOW.blit(*RABBITS[i].get_blit())
+    
+    for i in range(0, len(WOLVES), 100//draw_percentage):
+        WINDOW.blit(*WOLVES[i].get_blit())
     
     pg.display.update()
 
+def delete_genotype_stat(dead: list, animals: list):
+    # dead is list of boolean
+
+    for i in range(len(dead)):
+        if dead[i]:
+            deleted_genes_dict = animals[i].get_genes()
+            for gene, genotype in iter(deleted_genes_dict.items()):
+                GENOTYPE_STAT[gene][genotype] -= 1
+
+def get_dead_and_reproducing(dead: list, reproducing: list, animals: list):
+    for i, animal in enumerate(animals):
+        ret = animal.time_passed()
+
+        if ret == -1:
+            dead[i] = True
+        elif ret == 1:
+            reproducing.append(animal)
+
 def rabbit_time_passed():
     # 죽을 토끼를 죽이고 번식할 토끼들 중에서 무작위로 2마리씩 골라 번식시킨다.
-    reproducing_rabbits = []
-    dead_rabbits = []
+    global RABBITS
 
-    for i, rabbit in enumerate(RABBITS):
-        ret = rabbit.time_passed()
-        if ret == -1:
-            dead_rabbits.append(i)
-        elif ret == 1:
-            reproducing_rabbits.append(rabbit)
-    
+    dead = [False for _ in range(len(RABBITS))]
+    reproducing_rabbits = []
+    get_dead_and_reproducing(dead, reproducing_rabbits, RABBITS)
+    delete_genotype_stat(dead, RABBITS)
+    RABBITS = [rabbit for i, rabbit in enumerate(RABBITS) if not dead[i]]
+
+    if len(reproducing_rabbits) <= 1: return
+
     cnt = 0
-    for i in sorted(dead_rabbits):
-        deleted_genes_dict = RABBITS[i-cnt].get_genes()
-        for gene, genotype in iter(deleted_genes_dict.items()):
-            GENOTYPE_STAT[gene][genotype] -= 1
-        del RABBITS[i-cnt]
-        cnt += 1
+    already_picked = [False for _ in range(len(reproducing_rabbits))]
     
-    while len(reproducing_rabbits) >= 2:
-        i = random.randint(0, len(reproducing_rabbits)-1)
-        j = random.randint(0, len(reproducing_rabbits)-1)
-        if i == j: continue
-        if i > j:
-            i, j = j, i
+    i = j = 0
+    while cnt <= len(reproducing_rabbits)//2:
+        while already_picked[i]:
+            i = random.randint(0, len(reproducing_rabbits)-1)
+        while already_picked[j] and i == j:
+            j = random.randint(0, len(reproducing_rabbits)-1)
+
         new_gene_dict = gene_reproduce(reproducing_rabbits[i].get_genes(),
                                        reproducing_rabbits[j].get_genes())
         
@@ -135,8 +79,19 @@ def rabbit_time_passed():
             GENOTYPE_STAT[gene][genotype] += 1
 
         RABBITS.append(Rabbit(new_gene_dict, random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
-        del reproducing_rabbits[i]
-        del reproducing_rabbits[j-1]
+        already_picked[i] = already_picked[j] = True
+        cnt += 2
+
+def wolf_time_passed():
+    global WOLVES
+
+    dead = [False for _ in range(len(WOLVES))]
+    reproducing = []
+    get_dead_and_reproducing(dead, reproducing, WOLVES)
+    WOLVES = [wolf for i, wolf in enumerate(WOLVES) if not dead[i]]
+
+    for _ in range(len(reproducing)):
+        WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
 
 x = dict.fromkeys(GENE_NAMES, list())
 y1 = dict.fromkeys(GENE_NAMES, list())
@@ -144,7 +99,11 @@ y2 = dict.fromkeys(GENE_NAMES, list())
 time = 0
 
 def print_genostat(gene_name):
+    global RABBITS
+
     s = 2*sum(GENOTYPE_STAT[gene_name].values())
+    if s != 2*len(RABBITS):
+        print(s + '\n')
     ret = (round((2*GENOTYPE_STAT[gene_name]['AA'] + GENOTYPE_STAT[gene_name]['Aa'])/s, 2),
            round((GENOTYPE_STAT[gene_name]['Aa'] + 2*GENOTYPE_STAT[gene_name]['aa'])/s, 2))
 
@@ -165,7 +124,7 @@ def print_genostat(gene_name):
     plt.pause(0.1)
 
 def initialize_rabbit(num):
-    # AA 1/4, Aa 1/2, aa 1/4 의 비율로 토끼를 만든다
+    # AA 1/4, Aa 1/2, aa 1/4 의 비율로 num 마리의 토끼를 만든다
     # GENOTYPE_STAT을 초기화한다(key를 설정하고 value를 0으로)
 
     gene_cnt = dict()
@@ -177,25 +136,58 @@ def initialize_rabbit(num):
         new_gene_dict = dict.fromkeys(GENE_NAMES)
 
         for name in GENE_NAMES:
-            picked_genotype = GENOTYPE[pick_by_probability([gene_cnt[name][key]
-                                                                for key in GENOTYPE])]
+            temp = [gene_cnt[name][key] for key in GENOTYPE]
+            temp_idx = {item: idx for idx, item in enumerate(temp)}
+            picked_genotype = GENOTYPE[temp_idx[random.choices(temp, weights=temp)[0]]]
             new_gene_dict[name] = picked_genotype
             gene_cnt[name][picked_genotype] -= 1
             GENOTYPE_STAT[name][picked_genotype] += 1
 
         RABBITS.append(Rabbit(new_gene_dict, random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
 
+def initialize_wolf(num):
+    # num 마리의 늑대를 만든다
+    global WOLVES
+    
+    for _ in range(num):
+        WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
+
+def detect_collision():
+    global RABBITS
+
+    dead = [False for _ in range(len(RABBITS))]
+    rabbits_pos = [rabbit.get_pos() for rabbit in RABBITS]
+    wolf_margin = 7
+
+    cnt = 0
+    for wolf in WOLVES:
+        wp = wolf.get_pos()
+
+        for i, pos in enumerate(rabbits_pos):
+            if wp[0]-wolf_margin <= pos[0] <= wp[0]+wolf_margin and\
+            wp[1]-wolf_margin <= pos[1] <= wp[1]+wolf_margin and not dead[i]:
+                dead[i] = True
+                wolf.eat()
+                cnt += 1
+    
+    print(str(cnt)+' rabbits eaten!'+'\n')
+    delete_genotype_stat(dead, RABBITS)
+    RABBITS = [rabbit for i, rabbit in enumerate(RABBITS) if not dead[i]]
+
 def main():
     running = True
     paused = True
-    fps = 10
+    fps = 60
     #fps_limit = 600
     clock = pg.time.Clock()
 
     draw_window()
-    initial_rabbit = 500
-    max_rabbits = 1000
+    # initial_rabbit must be multiple of 4
+    initial_rabbit = 1000
+    initial_wolf = 50
+    max_rabbits = 2000
     initialize_rabbit(initial_rabbit)
+    initialize_wolf(initial_wolf)
 
     while running:
         clock.tick(fps)
@@ -210,8 +202,10 @@ def main():
             running = False
         
         if not paused:
-            print('Current num of rabbits: ', len(RABBITS))
+            print('Current rabbits and wolves: '+str(len(RABBITS))+' '+str(len(WOLVES))+'\n')
             rabbit_time_passed()
+            wolf_time_passed()
+            detect_collision()
             draw_window()
 
             CURRENT_ENV["Food type"] = 0

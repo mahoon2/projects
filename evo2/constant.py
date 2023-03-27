@@ -24,25 +24,27 @@ GENE_NAMES = ('Teeth', 'Speed', 'Color', 'Size', 'Time',
                   'Acromegaly', 'Metabolism', 'OxygenEffiency')
 GENOTYPE = ('AA', 'Aa', 'aa')
 
-ENV = {"Food type": ("Hard", "Soft"),
-       "Predator": ("On", "Off"),
-       "Ground": ("Grass", "Snow"),
-       "Predator size": ("Big", "Small"),
-       "Time" : ("Day", "Night"),
-       "Temperature": ("Extreme", "Moderate"),
-       "Food amount": ("Plenty", "Scarce"),
-       "Altitude": ("High", "Low")
-       }
+ENV = {
+    "Food type": ("Hard", "Soft"),
+    "Predator": ("On", "Off"),
+    "Ground": ("Grass", "Snow"),
+    "Predator size": ("Big", "Small"),
+    "Time" : ("Day", "Night"),
+    "Temperature": ("Extreme", "Moderate"),
+    "Food amount": ("Plenty", "Scarce"),
+    "Altitude": ("High", "Low")
+}
 
-CURRENT_ENV = {"Food type": 0,
-       "Predator": -1,
-       "Ground": -1,
-       "Predator size": -1,
-       "Time" : -1,
-       "Temperature": -1,
-       "Food amount": -1,
-       "Altitude": -1
-       }
+CURRENT_ENV = {
+    "Food type": 0,
+    "Predator": -1,
+    "Ground": -1,
+    "Predator size": -1,
+    "Time" : -1,
+    "Temperature": -1,
+    "Food amount": -1,
+    "Altitude": -1
+}
 
 ENV_DEATH_RATE = {
     "Food type Hard": ("Teeth", "A", 0.02),
