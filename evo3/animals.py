@@ -11,7 +11,6 @@ class Sprite:
         self.age = 0
         self.x = x
         self.y = y
-        self.theta = math.radians(random.randint(0, 359))
     
     def get_pos(self):
         return (self.x, self.y)
@@ -40,27 +39,27 @@ class Sprite:
 
 class Rabbit(Sprite):
 
-    REPRODUCE_THRESOLD = 10
+    REPRODUCE_THRESOLD = 5
     # Argument for pick_probability
-    REPRODUCE_RATE = [1, 7]
-    DEATH_THRESOLD = 70
-    SPEED = 50
-    MOVE_MOD = 5
+    REPRODUCE_RATE = [1, 1]
+    DEATH_THRESOLD = 50
 
     def __init__(self, gene_dict: dict, x: int, y: int):
         super().__init__(x, y)
         self.gene = gene_dict
-        self.speed = Rabbit.SPEED
         self.sf = pg.transform.scale(
             pg.image.load(self.get_image_path()), IMAGE_SIZE
         )
     
-    def get_genes(self):
+    def get_genes(self) -> dict:
         return self.gene
     
-    def get_image_path(self):
+    def get_image_path(self) -> str:
         # 특정 Gene의 표현형에 따라 파일을 다르게 할 수도 있음
-        return os.path.join('Assets', 'pixel_rabbit.png')
+        if 'A' in self.gene["Color"]:
+            return os.path.join('Assets', 'pixel_rabbit_camo.png')
+        else:
+            return os.path.join('Assets', 'pixel_rabbit.png')
 
     '''def move(self):
         if self.age % self.MOVE_MOD == 0:
@@ -75,35 +74,39 @@ class Rabbit(Sprite):
         elif self.y >= HEIGHT: self.y = 2*HEIGHT - self.y - 10'''
     
     # @override(Sprite)
-    def is_dead(self):
+    def is_dead(self) -> bool:
         if self.age >= Rabbit.DEATH_THRESOLD:
             return True
-        for env, val in iter(CURRENT_ENV.items()):
-            pass
+        
+        death_rate = ENV_DEATH_RATE[CURRENT_ENV]
+        for gene, genotype in self.gene.items():
+            temp = random.randint(1, 100)
+            prob = 0
 
-            '''if val == -1: continue
-            else:
-                env_join = env + ' ' + ENV[env][val]
-                gene_name, genotype, death_rate = ENV_DEATH_RATE[env_join]
-                if genotype in self.gene[gene_name]:
-                    prob_list = [death_rate*100, 100-(death_rate*100)]
-                    return [True, False][pick_by_probability(prob_list)]'''
+            if genotype == 'AA':
+                prob = death_rate[gene][0]
+            elif genotype == 'Aa':
+                prob = death_rate[gene][1]
+            elif genotype == 'aa':
+                prob = death_rate[gene][2]
 
+            if temp <= 100*prob:
+                return True
         return False
 
     # @override(Sprite)
-    def is_reproducing(self):
+    def is_reproducing(self) -> bool:
         if self.age < Rabbit.REPRODUCE_THRESOLD:
             return False
         else:
             return random.choices([True, False], weights=Rabbit.REPRODUCE_RATE)[0]
     
-    def parse_gene(self):
+    '''def parse_gene(self):
         # 현재 켜져 있지 않은 환경(-1)은 무시한다.
         # ex) 유전자형 상으로 사이즈나 속도가 달라도 해당 환경이 꺼져 있으면 고려하지 않는다. 
         for env, val in iter(CURRENT_ENV.items()):
             if val == -1: continue
-            key = env + ' ' + val
+            key = env + ' ' + val'''
 
 # END of class Rabbit
 

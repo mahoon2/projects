@@ -7,6 +7,13 @@ from animals import *
 
 print = sys.stdout.write
 
+x = list()
+y1 = dict()
+y2 = dict()
+time = 0
+FIGURE = plt.figure("Allele frequency", figsize=(6.4, 9.6))
+fig = dict()
+
 def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
     ret = dict()
 
@@ -27,8 +34,8 @@ def draw_window():
     for i in range(0, len(RABBITS), 100//draw_percentage):
         WINDOW.blit(*RABBITS[i].get_blit())
     
-    for i in range(0, len(WOLVES), 100//draw_percentage):
-        WINDOW.blit(*WOLVES[i].get_blit())
+    '''for i in range(0, len(WOLVES), 100//draw_percentage):
+        WINDOW.blit(*WOLVES[i].get_blit())'''
     
     pg.display.update()
 
@@ -83,7 +90,7 @@ def rabbit_time_passed():
         already_picked[i] = already_picked[j] = True
         cnt += 2
 
-def wolf_time_passed():
+'''def wolf_time_passed():
     global WOLVES
 
     dead = [False for _ in range(len(WOLVES))]
@@ -92,37 +99,37 @@ def wolf_time_passed():
     WOLVES = [wolf for i, wolf in enumerate(WOLVES) if not dead[i]]
 
     for _ in range(len(reproducing)):
-        WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
+        WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))'''
 
-x = dict.fromkeys(GENE_NAMES, list())
-y1 = dict.fromkeys(GENE_NAMES, list())
-y2 = dict.fromkeys(GENE_NAMES, list())
-time = 0
+def initialize_plt():
+    for i, gene_name in enumerate(GENE_NAMES):
+        fig[gene_name] = FIGURE.add_subplot(3, 1, i+1, xlabel='time', ylabel='frequency')
+        y1[gene_name] = list()
+        y2[gene_name] = list()
 
-def print_genostat(gene_name):
-    global RABBITS
+    FIGURE.tight_layout()
 
-    s = 2*sum(GENOTYPE_STAT[gene_name].values())
-    if s != 2*len(RABBITS):
-        print(s + '\n')
-    ret = (round((2*GENOTYPE_STAT[gene_name]['AA'] + GENOTYPE_STAT[gene_name]['Aa'])/s, 2),
-           round((GENOTYPE_STAT[gene_name]['Aa'] + 2*GENOTYPE_STAT[gene_name]['aa'])/s, 2))
+def print_genostats():
+    global RABBITS, time
 
-    global time
-    x[gene_name].append(time)
-    y1[gene_name].append(ret[0])
-    y2[gene_name].append(ret[1])
+    x.append(time)
+    for gene_name in GENE_NAMES:
+        s = 2*sum(GENOTYPE_STAT[gene_name].values())
+        if s != 2*len(RABBITS):
+            print(s + '\n')
+        ret = (round((2*GENOTYPE_STAT[gene_name]['AA'] + GENOTYPE_STAT[gene_name]['Aa'])/s, 2),
+            round((GENOTYPE_STAT[gene_name]['Aa'] + 2*GENOTYPE_STAT[gene_name]['aa'])/s, 2))
+
+        y1[gene_name].append(ret[0])
+        y2[gene_name].append(ret[1])
+        fig[gene_name].cla()
+        fig[gene_name].plot(x, y1[gene_name], label=GENOTYPE_NAMES[gene_name][0])
+        fig[gene_name].plot(x, y2[gene_name], label=GENOTYPE_NAMES[gene_name][1])
+        fig[gene_name].legend(loc='upper left')
+        fig[gene_name].set_title(gene_name+' frequency')
+        plt.pause(0.1)
+
     time += 1
-
-    plt.cla()
-    plt.plot(x[gene_name], y1[gene_name], label='A')
-    plt.plot(x[gene_name], y2[gene_name], label='a')
-    plt.suptitle('Allele frequency')
-    plt.xlabel('time')
-    plt.ylabel('frequency')
-    plt.legend(loc='upper left')
-    plt.tight_layout()
-    plt.pause(0.1)
 
 def initialize_rabbit(num):
     # AA 1/4, Aa 1/2, aa 1/4 의 비율로 num 마리의 토끼를 만든다
@@ -146,14 +153,14 @@ def initialize_rabbit(num):
 
         RABBITS.append(Rabbit(new_gene_dict, random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
 
-def initialize_wolf(num):
+'''def initialize_wolf(num):
     # num 마리의 늑대를 만든다
     global WOLVES
     
     for _ in range(num):
-        WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
+        WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))'''
 
-def detect_collision():
+'''def detect_collision():
     global RABBITS
 
     dead = [False for _ in range(len(RABBITS))]
@@ -173,7 +180,7 @@ def detect_collision():
     
     print(str(cnt)+' rabbits eaten!'+'\n')
     delete_genotype_stat(dead, RABBITS)
-    RABBITS = [rabbit for i, rabbit in enumerate(RABBITS) if not dead[i]]
+    RABBITS = [rabbit for i, rabbit in enumerate(RABBITS) if not dead[i]]'''
 
 def main():
     running = True
@@ -185,10 +192,11 @@ def main():
     draw_window()
     # initial_rabbit must be multiple of 4
     initial_rabbit = 1000
-    initial_wolf = 50
-    max_rabbits = 2000
+    #initial_wolf = 50
+    max_rabbits = 10000
     initialize_rabbit(initial_rabbit)
-    initialize_wolf(initial_wolf)
+    initialize_plt()
+    #initialize_wolf(initial_wolf)
 
     while running:
         clock.tick(fps)
@@ -203,19 +211,16 @@ def main():
             running = False
         
         if not paused:
-            print('Current rabbits and wolves: '+str(len(RABBITS))+' '+str(len(WOLVES))+'\n')
+            print('Current rabbits: '+str(len(RABBITS))+'\n')
             rabbit_time_passed()
-            wolf_time_passed()
-            detect_collision()
+            #wolf_time_passed()
+            #detect_collision()
             draw_window()
-
-            CURRENT_ENV["Food type"] = 0
-            print_genostat("Teeth")
-            '''for gene_name in GENE_NAMES:
-                print_genostat(gene_name)'''
+            print_genostats()
     
-    plt.show()
     pg.quit()
+    plt.show()
+    plt.close()
 
 if __name__ == '__main__':
     main()

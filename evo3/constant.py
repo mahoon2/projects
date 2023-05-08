@@ -9,6 +9,8 @@ pg.display.set_caption("Evolution simulator v0.3(Nightly)")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RECT_NOCLICK_COLOR = (200, 200, 200)
+RECT_CLICK_COLOR = (100, 100, 100)
 
 IMAGE_SIZE = (75, 75)
 BACKGROUND = pg.transform.scale(
@@ -16,50 +18,53 @@ BACKGROUND = pg.transform.scale(
 )
 
 RABBITS = []
-WOLVES = []
+#WOLVES = []
 GENOTYPE_STAT = {}
 
-# Acromegaly = 말단 비대증
 GENE_NAMES = ('Color', 'Speed', 'Fur')
 GENOTYPE = ('AA', 'Aa', 'aa')
-
-ENV = {
-    "Food type": ("Hard", "Soft"),
-    "Predator": ("On", "Off"),
-    "Ground": ("Grass", "Snow"),
-    "Predator size": ("Big", "Small"),
-    "Time" : ("Day", "Night"),
-    "Temperature": ("Extreme", "Moderate"),
-    "Food amount": ("Plenty", "Scarce"),
-    "Altitude": ("High", "Low")
+GENOTYPE_NAMES = {
+    'Color': ('Camouflage', 'White'),
+    'Speed': ('Fast', 'Slow'),
+    'Fur': ('Short', 'Long')
 }
 
-CURRENT_ENV = {
-    "Food type": 0,
-    "Predator": -1,
-    "Ground": -1,
-    "Predator size": -1,
-    "Time" : -1,
-    "Temperature": -1,
-    "Food amount": -1,
-    "Altitude": -1
-}
+ENV_NAMES = (
+    "Arctic A",
+    "Arctic B",
+    "Amazon A",
+    "Amazon B",
+    "Desert A",
+    "Desert B"
+)
+
+CURRENT_ENV = "Arctic A"
+HIGH_DEATH_RATE = 0.04
+MID_DEATH_RATE = 0.02
+LOW_DEATH_RATE = 0.01
 
 ENV_DEATH_RATE = {
-    "Food type Hard": ("Teeth", "A", 0.02),
-    "Food type Soft": ("Teeth", "a", 0.5),
-    "Predator On": ("Speed", "A", 0.5),
-    "Predator Off": ("Speed", "a", 0.5),
-    "Ground Grass": ("Color", "A", 0.5),
-    "Ground Snow": ("Color", "a", 0.5),
-    "Predator size Big": ("Size", "A", 0.5),
-    "Predator size Small": ("Size", "a", 0.5),
-    "Time Day": ("Time", "A", 0.5),
-    "Time Night": ("Time", "a", 0.5),
-    "Temperature Extreme": ("Acromegaly", "A", 0.5),
-    "Temperature Moderate": ("Acromegaly", "a", 0.5),
-    "Food amount Plenty": ("Metabolism", "A", 0.5),
-    "Food amount Scarce": ("Metabolism", "a", 0.5),
-    "Altitude High": ("OxygenEffiency", "A", 0.5),
-    "Altitude Low": ("OxygenEffiency", "a", 0.5)
+    "Arctic A":  {'Color': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
+                 'Speed': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Fur': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE)},
+
+    "Arctic B":  {'Color': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
+                 'Speed': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
+                 'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},
+
+    "Amazon A":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Speed': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Fur': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE)},
+
+    "Amazon B":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Speed': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
+                 'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},
+
+    "Desert A":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Speed': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},
+
+    "Desert B":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
+                 'Speed': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
+                 'Fur': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE)},
 }
