@@ -4,6 +4,7 @@ import random
 import sys
 from constant import *
 from animals import *
+from buttons import *
 
 print = sys.stdout.write
 
@@ -36,6 +37,14 @@ def draw_window():
     
     '''for i in range(0, len(WOLVES), 100//draw_percentage):
         WINDOW.blit(*WOLVES[i].get_blit())'''
+    
+    WINDOW.fill(BLACK, BUTTON_BACKGROUND)
+    for button in BUTTONS:
+        if button.get_pressed():
+            WINDOW.fill(RECT_CLICK_COLOR, button.get_rect())
+        else:
+            WINDOW.fill(RECT_NOCLICK_COLOR, button.get_rect())
+        WINDOW.blit(button.get_text(), button.get_pos())
     
     pg.display.update()
 
@@ -182,27 +191,42 @@ def initialize_rabbit(num):
     delete_genotype_stat(dead, RABBITS)
     RABBITS = [rabbit for i, rabbit in enumerate(RABBITS) if not dead[i]]'''
 
+def initialize_buttons():
+    for i, name in enumerate(ENV_NAMES):
+        BUTTONS.append(Button(i*WIDTH//6+PADDING, PADDING, WIDTH//6-PADDING, HEIGHT//10-PADDING, name))
+
 def main():
+    global CURRENT_ENV, BACKGROUND
+
     running = True
     paused = True
     fps = 60
     #fps_limit = 600
     clock = pg.time.Clock()
 
-    draw_window()
     # initial_rabbit must be multiple of 4
     initial_rabbit = 1000
     #initial_wolf = 50
     max_rabbits = 10000
     initialize_rabbit(initial_rabbit)
+     #initialize_wolf(initial_wolf)
     initialize_plt()
-    #initialize_wolf(initial_wolf)
+    initialize_buttons()
+    draw_window()
 
     while running:
         clock.tick(fps)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                mouse_pos = pg.mouse.get_pos()
+                for button in BUTTONS:
+                    if button.toggle_if_clicked(*mouse_pos):
+                        if button.get_pressed():
+                            CURRENT_ENV = button.get_name()
+                            BACKGROUND = pg.transform.scale(button.get_background(), (WIDTH, HEIGHT))
+                        draw_window()
             elif event.type == pg.KEYDOWN:
                 if pg.key.get_pressed()[pg.K_p]:
                     paused = False
@@ -221,6 +245,7 @@ def main():
     pg.quit()
     plt.show()
     plt.close()
+    return
 
 if __name__ == '__main__':
     main()
