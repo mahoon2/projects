@@ -14,8 +14,6 @@ class Button:
     def toggle_if_clicked(self, x: int, y: int) -> bool:
         if self.block.collidepoint(x, y):
             self.pressed = not self.pressed
-            if self.pressed:
-                print('Current environment is:', self.name)
             return True
 
     def get_pressed(self) -> bool:

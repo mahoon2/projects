@@ -1,5 +1,5 @@
 import pygame as pg
-import os
+from os import path
 
 pg.init()
 
@@ -17,7 +17,7 @@ PADDING = 5
 
 IMAGE_SIZE = (75, 75)
 BACKGROUND = pg.transform.scale(
-    pg.image.load(os.path.join('Assets', 'grass_bg.jpg')), (WIDTH, HEIGHT)
+    pg.image.load(path.join('Assets', 'grass_bg.jpg')), (WIDTH, HEIGHT)
 )
 BUTTON_BACKGROUND = pg.Rect(0, 0, WIDTH, HEIGHT//10+PADDING)
 
@@ -45,32 +45,37 @@ ENV_NAMES = (
     "Desert B"
 )
 
-CURRENT_ENV = "Amazon A"
-HIGH_DEATH_RATE = 0.04
-MID_DEATH_RATE = 0.02
-LOW_DEATH_RATE = 0.01
+HIGH_DEATH_RATE = 5
+MID_DEATH_RATE = 1
+LOW_DEATH_RATE = 1
 
 ENV_DEATH_RATE = {
+    # WHITE, FAST, LONG
     "Arctic A":  {'Color': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
                  'Speed': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Fur': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE)},
 
+    # WHITE, SLOW, SHORT
     "Arctic B":  {'Color': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
                  'Speed': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
                  'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},
 
+    # CAMOUFLAGE, FAST, LONG
     "Amazon A":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Speed': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Fur': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE)},
 
+    # CAMOUFLAGE, SLOW, SHORT
     "Amazon B":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Speed': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
                  'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},
 
+    # CAMOUFLAGE, FAST, SHORT
     "Desert A":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Speed': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},
 
+    # CAMOUFLAGE, SLOW, SHORT
     "Desert B":  {'Color': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE),
                  'Speed': (HIGH_DEATH_RATE, MID_DEATH_RATE, LOW_DEATH_RATE),
                  'Fur': (LOW_DEATH_RATE, MID_DEATH_RATE, HIGH_DEATH_RATE)},

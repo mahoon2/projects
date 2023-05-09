@@ -14,6 +14,7 @@ y2 = dict()
 time = 0
 FIGURE = plt.figure("Allele frequency", figsize=(6.4, 9.6))
 fig = dict()
+CURRENT_ENV = None
 
 def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
     ret = dict()
@@ -59,7 +60,7 @@ def delete_genotype_stat(dead: list, animals: list):
 
 def get_dead_and_reproducing(dead: list, reproducing: list, animals: list):
     for i, animal in enumerate(animals):
-        ret = animal.time_passed()
+        ret = animal.time_passed(CURRENT_ENV)
 
         if ret == -1:
             dead[i] = True
@@ -225,6 +226,7 @@ def main():
                     if button.toggle_if_clicked(*mouse_pos):
                         if button.get_pressed():
                             CURRENT_ENV = button.get_name()
+                            print(CURRENT_ENV+" selected\n")
                             BACKGROUND = pg.transform.scale(button.get_background(), (WIDTH, HEIGHT))
                         draw_window()
             elif event.type == pg.KEYDOWN:
@@ -234,7 +236,7 @@ def main():
         if len(RABBITS) >= max_rabbits or len(RABBITS) <= 1:
             running = False
         
-        if not paused:
+        if not paused and CURRENT_ENV is not None:
             print('Current rabbits: '+str(len(RABBITS))+'\n')
             rabbit_time_passed()
             #wolf_time_passed()

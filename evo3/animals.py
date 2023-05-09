@@ -1,8 +1,6 @@
-# from overrides import override
 import pygame as pg
 import random
-# import math
-import os
+from os import path
 from constant import *
 
 class Sprite:
@@ -18,18 +16,18 @@ class Sprite:
     def get_blit(self) -> tuple:
         return (self.sf, (self.x, self.y))
     
-    def time_passed(self) -> int:
+    def time_passed(self, current_env) -> int:
         # 0 for nothing
         # -1 for death
         # 1 for reproducing
 
         self.age += 1
         # self.move()
-        if self.is_dead(): return -1
+        if self.is_dead(current_env): return -1
         elif self.is_reproducing(): return 1
         else: return 0
     
-    def is_dead(self) -> bool:
+    def is_dead(self, current_env) -> bool:
         return False
     
     def is_reproducing(self) -> bool:
@@ -57,9 +55,9 @@ class Rabbit(Sprite):
     def get_image_path(self) -> str:
         # 특정 Gene의 표현형에 따라 파일을 다르게 할 수도 있음
         if 'A' in self.gene["Color"]:
-            return os.path.join('Assets', 'pixel_rabbit_camo.png')
+            return path.join('Assets', 'pixel_rabbit_camo.png')
         else:
-            return os.path.join('Assets', 'pixel_rabbit.png')
+            return path.join('Assets', 'pixel_rabbit.png')
 
     '''def move(self):
         if self.age % self.MOVE_MOD == 0:
@@ -74,11 +72,11 @@ class Rabbit(Sprite):
         elif self.y >= HEIGHT: self.y = 2*HEIGHT - self.y - 10'''
     
     # @override(Sprite)
-    def is_dead(self) -> bool:
+    def is_dead(self, current_env) -> bool:
         if self.age >= Rabbit.DEATH_THRESOLD:
             return True
         
-        death_rate = ENV_DEATH_RATE[CURRENT_ENV]
+        death_rate = ENV_DEATH_RATE[current_env]
         for gene, genotype in self.gene.items():
             temp = random.randint(1, 100)
             prob = 0
@@ -90,7 +88,7 @@ class Rabbit(Sprite):
             elif genotype == 'aa':
                 prob = death_rate[gene][2]
 
-            if temp <= 100*prob:
+            if temp <= prob:
                 return True
         return False
 
