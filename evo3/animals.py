@@ -1,7 +1,7 @@
 # from overrides import override
 import pygame as pg
 import random
-import math
+# import math
 import os
 from constant import *
 
@@ -12,13 +12,13 @@ class Sprite:
         self.x = x
         self.y = y
     
-    def get_pos(self):
+    def get_pos(self) -> tuple:
         return (self.x, self.y)
     
-    def get_blit(self):
+    def get_blit(self) -> tuple:
         return (self.sf, (self.x, self.y))
     
-    def time_passed(self):
+    def time_passed(self) -> int:
         # 0 for nothing
         # -1 for death
         # 1 for reproducing
@@ -29,10 +29,10 @@ class Sprite:
         elif self.is_reproducing(): return 1
         else: return 0
     
-    def is_dead(self):
+    def is_dead(self) -> bool:
         return False
     
-    def is_reproducing(self):
+    def is_reproducing(self) -> bool:
         return False
 
 # End of class Sprite

@@ -29,7 +29,7 @@ def gene_reproduce(father_gene: dict, mother_gene: dict) -> dict:
 
 def draw_window():
     # Only approximately 'draw_percentage'% animals will be drawn 
-    draw_percentage = 10
+    draw_percentage = 1
     WINDOW.blit(BACKGROUND, (0, 0))
     
     for i in range(0, len(RABBITS), 100//draw_percentage):
@@ -70,7 +70,7 @@ def rabbit_time_passed():
     # 죽을 토끼를 죽이고 번식할 토끼들 중에서 무작위로 2마리씩 골라 번식시킨다.
     global RABBITS
 
-    dead = [False for _ in range(len(RABBITS))]
+    dead = [False] * len(RABBITS)
     reproducing_rabbits = []
     get_dead_and_reproducing(dead, reproducing_rabbits, RABBITS)
     delete_genotype_stat(dead, RABBITS)
@@ -79,7 +79,7 @@ def rabbit_time_passed():
     if len(reproducing_rabbits) <= 1: return
 
     cnt = 0
-    already_picked = [False for _ in range(len(reproducing_rabbits))]
+    already_picked = [False] * len(reproducing_rabbits)
     
     i = j = 0
     while cnt <= len(reproducing_rabbits)//2:
@@ -118,24 +118,24 @@ def initialize_plt():
 
     FIGURE.tight_layout()
 
-def print_genostats():
+def print_genostats(plot_print_gap: int):
     global RABBITS, time
 
     x.append(time)
     for gene_name in GENE_NAMES:
         s = 2*sum(GENOTYPE_STAT[gene_name].values())
-        if s != 2*len(RABBITS):
-            print(s + '\n')
         ret = (round((2*GENOTYPE_STAT[gene_name]['AA'] + GENOTYPE_STAT[gene_name]['Aa'])/s, 2),
             round((GENOTYPE_STAT[gene_name]['Aa'] + 2*GENOTYPE_STAT[gene_name]['aa'])/s, 2))
 
         y1[gene_name].append(ret[0])
         y2[gene_name].append(ret[1])
-        fig[gene_name].cla()
-        fig[gene_name].plot(x, y1[gene_name], label=GENOTYPE_NAMES[gene_name][0])
-        fig[gene_name].plot(x, y2[gene_name], label=GENOTYPE_NAMES[gene_name][1])
-        fig[gene_name].legend(loc='upper left')
-        fig[gene_name].set_title(gene_name+' frequency')
+
+        if time % plot_print_gap == 0:
+            fig[gene_name].cla()
+            fig[gene_name].plot(x, y1[gene_name], label=GENOTYPE_NAMES[gene_name][0])
+            fig[gene_name].plot(x, y2[gene_name], label=GENOTYPE_NAMES[gene_name][1])
+            fig[gene_name].legend(loc='upper left')
+            fig[gene_name].set_title(gene_name+' frequency')
         plt.pause(0.1)
 
     time += 1
@@ -240,7 +240,7 @@ def main():
             #wolf_time_passed()
             #detect_collision()
             draw_window()
-            print_genostats()
+            print_genostats(5)
     
     pg.quit()
     plt.show()
