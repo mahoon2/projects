@@ -5,6 +5,7 @@ import sys
 from constant import *
 from animals import *
 from buttons import *
+from initialize import *
 
 print = sys.stdout.write
 
@@ -55,8 +56,14 @@ def delete_genotype_stat(dead: list, animals: list):
     for i in range(len(dead)):
         if dead[i]:
             deleted_genes_dict = animals[i].get_genes()
+            (age, child) = animals[i].get_age_and_childs()
             for gene, genotype in iter(deleted_genes_dict.items()):
                 GENOTYPE_STAT[gene][genotype] -= 1
+                name = GENOTYPE_NAMES[gene][0] if 'A' in genotype else GENOTYPE_NAMES[gene][1]
+                AGE_STAT[gene][name][0] += age
+                AGE_STAT[gene][name][1] += 1
+                CHILDS_STAT[gene][name][0] += child
+                CHILDS_STAT[gene][name][1] += 1
 
 def get_dead_and_reproducing(dead: list, reproducing: list, animals: list):
     for i, animal in enumerate(animals):
@@ -111,14 +118,6 @@ def rabbit_time_passed():
     for _ in range(len(reproducing)):
         WOLVES.append(Wolf(random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))'''
 
-def initialize_plt():
-    for i, gene_name in enumerate(GENE_NAMES):
-        fig[gene_name] = FIGURE.add_subplot(3, 1, i+1, xlabel='time', ylabel='frequency')
-        y1[gene_name] = list()
-        y2[gene_name] = list()
-
-    FIGURE.tight_layout()
-
 def print_genostats(plot_print_gap: int):
     global RABBITS, time
 
@@ -140,28 +139,6 @@ def print_genostats(plot_print_gap: int):
         plt.pause(0.1)
 
     time += 1
-
-def initialize_rabbit(num):
-    # AA 1/4, Aa 1/2, aa 1/4 의 비율로 num 마리의 토끼를 만든다
-    # GENOTYPE_STAT을 초기화한다(key를 설정하고 value를 0으로)
-
-    gene_cnt = dict()
-    for name in GENE_NAMES:
-        gene_cnt[name] = {'AA':num//4, 'Aa':num//2, 'aa':num//4}
-        GENOTYPE_STAT[name] = {'AA':0, 'Aa':0, 'aa':0}
-
-    for _ in range(num):
-        new_gene_dict = dict.fromkeys(GENE_NAMES)
-
-        for name in GENE_NAMES:
-            temp = [gene_cnt[name][key] for key in GENOTYPE]
-            temp_idx = {item: idx for idx, item in enumerate(temp)}
-            picked_genotype = GENOTYPE[temp_idx[random.choices(temp, weights=temp)[0]]]
-            new_gene_dict[name] = picked_genotype
-            gene_cnt[name][picked_genotype] -= 1
-            GENOTYPE_STAT[name][picked_genotype] += 1
-
-        RABBITS.append(Rabbit(new_gene_dict, random.randint(*WIDTH_RANGE), random.randint(*HEIGHT_RANGE)))
 
 '''def initialize_wolf(num):
     # num 마리의 늑대를 만든다
@@ -192,9 +169,12 @@ def initialize_rabbit(num):
     delete_genotype_stat(dead, RABBITS)
     RABBITS = [rabbit for i, rabbit in enumerate(RABBITS) if not dead[i]]'''
 
-def initialize_buttons():
-    for i, name in enumerate(ENV_NAMES):
-        BUTTONS.append(Button(i*WIDTH//6+PADDING, PADDING, WIDTH//6-PADDING, HEIGHT//10-PADDING, name))
+def print_age_and_child_stats():
+    calc_average = lambda x: round(x[0]/x[1], 2)
+    for gene in GENE_NAMES:
+        print('-'*50 + '\n')
+        for name in GENOTYPE_NAMES[gene]:
+            print(name + '\'s average age and childs: ' + str(calc_average(AGE_STAT[gene][name])) + ' ' + str(calc_average(CHILDS_STAT[gene][name])) + '\n')
 
 def main():
     global CURRENT_ENV, BACKGROUND
@@ -211,7 +191,7 @@ def main():
     max_rabbits = 10000
     initialize_rabbit(initial_rabbit)
      #initialize_wolf(initial_wolf)
-    initialize_plt()
+    initialize_plt(FIGURE, fig, y1, y2)
     initialize_buttons()
     draw_window()
 
@@ -244,6 +224,7 @@ def main():
             draw_window()
             print_genostats(5)
     
+    print_age_and_child_stats()
     pg.quit()
     plt.show()
     plt.close()

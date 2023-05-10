@@ -7,7 +7,7 @@ WIDTH, HEIGHT = 1024, 768
 WIDTH_RANGE = (0, WIDTH*9//10)
 HEIGHT_RANGE = (HEIGHT*2//10, HEIGHT*9//10)
 WINDOW = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("Evolution simulator v0.4")
+pg.display.set_caption("Evolution simulator v0.5")
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -26,6 +26,8 @@ FONT = pg.font.SysFont(pg.font.get_default_font(), 30, True)
 RABBITS = []
 #WOLVES = []
 GENOTYPE_STAT = {}
+AGE_STAT = {}
+CHILDS_STAT = {}
 BUTTONS = []
 
 GENE_NAMES = ('Color', 'Speed', 'Fur')
@@ -46,7 +48,7 @@ ENV_NAMES = (
 )
 
 HIGH_DEATH_RATE = 5
-MID_DEATH_RATE = 1
+MID_DEATH_RATE = 2
 LOW_DEATH_RATE = 1
 
 ENV_DEATH_RATE = {

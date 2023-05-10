@@ -7,6 +7,7 @@ class Sprite:
 
     def __init__(self, x: int, y: int):
         self.age = 0
+        self.childs = 0
         self.x = x
         self.y = y
     
@@ -97,7 +98,10 @@ class Rabbit(Sprite):
         if self.age < Rabbit.REPRODUCE_THRESOLD:
             return False
         else:
-            return random.choices([True, False], weights=Rabbit.REPRODUCE_RATE)[0]
+            ret = random.choices([True, False], weights=Rabbit.REPRODUCE_RATE)[0]
+            if ret:
+                self.childs += 1
+            return ret
     
     '''def parse_gene(self):
         # 현재 켜져 있지 않은 환경(-1)은 무시한다.
@@ -105,6 +109,9 @@ class Rabbit(Sprite):
         for env, val in iter(CURRENT_ENV.items()):
             if val == -1: continue
             key = env + ' ' + val'''
+
+    def get_age_and_childs(self) -> tuple:
+        return (self.age, self.childs)
 
 # END of class Rabbit
 
