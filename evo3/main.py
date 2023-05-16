@@ -13,7 +13,7 @@ x = list()
 y1 = dict()
 y2 = dict()
 time = 0
-FIGURE = plt.figure("Allele frequency", figsize=(6.4, 9.6))
+FIGURE = plt.figure("Allele frequency", figsize=(6.4, 8.0))
 fig = dict()
 CURRENT_ENV = None
 
