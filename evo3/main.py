@@ -171,9 +171,30 @@ def print_genostats(plot_print_gap: int):
 def print_age_and_child_stats():
     calc_average = lambda x: round(x[0]/x[1], 2)
     for gene in GENE_NAMES:
-        print('-'*50 + '\n')
-        for name in GENOTYPE_NAMES[gene]:
-            print(name + '\'s average age and childs: ' + str(calc_average(AGE_STAT[gene][name])) + ' ' + str(calc_average(CHILDS_STAT[gene][name])) + '\n')
+        print('-'*55 + '\n')
+        age_ret = [0, 0]
+        child_ret = [0, 0]
+        for i, name in enumerate(GENOTYPE_NAMES[gene]):
+            age_ret[i] = calc_average(AGE_STAT[gene][name])
+            child_ret[i] = calc_average(CHILDS_STAT[gene][name])
+
+        if y1[gene][-1] > y2[gene][-1]:
+            if age_ret[0] < age_ret[1]:
+                age_ret[0], age_ret[1] = age_ret[1], age_ret[0]
+            if child_ret[0] < child_ret[1]:
+                child_ret[0], child_ret[1] = child_ret[1], child_ret[0]
+        else:
+            if age_ret[0] > age_ret[1]:
+                age_ret[0], age_ret[1] = age_ret[1], age_ret[0]
+            if child_ret[0] > child_ret[1]:
+                child_ret[0], child_ret[1] = child_ret[1], child_ret[0]
+
+        for i, name in enumerate(GENOTYPE_NAMES[gene]):
+            print(name + '\'s average age and childs: ' + str(age_ret[i]) + ' ' + str(child_ret[i]))
+            if i == 0:
+                print(' / ' + str(round(y1[gene][-1], 2)) + '\n')
+            else:
+                print(' / ' + str(round(y2[gene][-1], 2)) + '\n')
 
 def main():
     global CURRENT_ENV, BACKGROUND
