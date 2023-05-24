@@ -42,7 +42,7 @@ def draw_window():
     
     WINDOW.fill(BLACK, BUTTON_BACKGROUND)
     for button in BUTTONS:
-        if button.get_pressed():
+        if button.get_pressed() and button.get_name() == CURRENT_ENV:
             WINDOW.fill(RECT_CLICK_COLOR, button.get_rect())
         else:
             WINDOW.fill(RECT_NOCLICK_COLOR, button.get_rect())
@@ -68,7 +68,6 @@ def delete_genotype_stat(dead: list, animals: list):
 def get_dead_and_reproducing(dead: list, reproducing: list, animals: list):
     for i, animal in enumerate(animals):
         ret = animal.time_passed(CURRENT_ENV)
-
         if ret == -1:
             dead[i] = True
         elif ret == 1:
@@ -186,9 +185,9 @@ def main():
     clock = pg.time.Clock()
 
     # initial_rabbit must be multiple of 4
-    initial_rabbit = 1000
+    initial_rabbit = 2000
     #initial_wolf = 50
-    max_rabbits = 10000
+    max_rabbits = 20000
     initialize_rabbit(initial_rabbit)
      #initialize_wolf(initial_wolf)
     initialize_plt(FIGURE, fig, y1, y2)

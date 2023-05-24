@@ -25,13 +25,13 @@ class Sprite:
         self.age += 1
         # self.move()
         if self.is_dead(current_env): return -1
-        elif self.is_reproducing(): return 1
+        elif self.is_reproducing(current_env): return 1
         else: return 0
     
     def is_dead(self, current_env) -> bool:
         return False
     
-    def is_reproducing(self) -> bool:
+    def is_reproducing(self, current_env) -> bool:
         return False
 
 # End of class Sprite
@@ -49,6 +49,7 @@ class Rabbit(Sprite):
         self.sf = pg.transform.scale(
             pg.image.load(self.get_image_path()), IMAGE_SIZE
         )
+        self.current_concerning_gene = 0
     
     def get_genes(self) -> dict:
         return self.gene
@@ -78,7 +79,13 @@ class Rabbit(Sprite):
             return True
         
         death_rate = ENV_DEATH_RATE[current_env]
-        for gene, genotype in self.gene.items():
+        '''gene = GENE_NAMES[self.current_concerning_gene]
+        genotype = self.gene[gene]'''
+        #gene_names = list(GENE_NAMES)
+        #random.shuffle(gene_names)
+
+        for gene in GENE_NAMES:
+            genotype = self.gene[gene]
             temp = random.randint(1, 100)
             prob = 0
 
@@ -94,14 +101,30 @@ class Rabbit(Sprite):
         return False
 
     # @override(Sprite)
-    def is_reproducing(self) -> bool:
-        if self.age < Rabbit.REPRODUCE_THRESOLD:
-            return False
-        else:
-            ret = random.choices([True, False], weights=Rabbit.REPRODUCE_RATE)[0]
-            if ret:
+    def is_reproducing(self, current_env) -> bool:
+        if self.age >= Rabbit.REPRODUCE_THRESOLD:
+            if random.choices([True, False], weights=Rabbit.REPRODUCE_RATE)[0]:
                 self.childs += 1
-            return ret
+                return True
+            '''death_rate = ENV_DEATH_RATE[current_env]
+            #gene_names = list(GENE_NAMES)
+            #random.shuffle(gene_names)
+
+            for gene in GENE_NAMES:
+                genotype = self.gene[gene]
+                temp = random.randint(1, 100)
+                prob = 10
+
+                if genotype == 'AA':
+                    prob -= death_rate[gene][0]
+                elif genotype == 'Aa':
+                    prob -= death_rate[gene][1]
+                elif genotype == 'aa':
+                    prob -= death_rate[gene][2]
+                if temp <= prob*10:
+                    self.childs += 1
+                    return True'''
+        return False
     
     '''def parse_gene(self):
         # 현재 켜져 있지 않은 환경(-1)은 무시한다.
